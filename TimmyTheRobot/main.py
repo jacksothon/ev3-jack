@@ -10,7 +10,7 @@ from pybricks.robotics import DriveBase
 
 import struct
 
-# Declare motors 
+# Declare motors 12345
 left_motor = Motor(Port.B)
 right_motor = Motor(Port.C)
 
