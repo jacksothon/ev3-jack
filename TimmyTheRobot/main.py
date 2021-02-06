@@ -35,8 +35,8 @@ def scale(val, src, dst):
 
 
 # Find the PS4 Gamepad:
-# /dev/input/event3 is the usual file handler for the gamepad.
-# look at contents of /proc/bus/input/devices if it doesn't work.
+# /dev/input/event4 is the usual file handler for the gamepad.
+# look at contents of /proc  /bus/input/devices if it doesn't work.
 infile_path = "/dev/input/event4"
 
 # open file in binary mode
