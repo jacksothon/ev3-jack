@@ -1,4 +1,4 @@
-import controller
+from pyPS4Controller.controller import Controller
 
 
 class MyController(Controller):
