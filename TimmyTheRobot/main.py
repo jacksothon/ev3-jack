@@ -1,71 +1,101 @@
-#!/usr/bin/env pybricks-micropython
+#!/usr/bin/env python3
+"""
+When the PS4 is paried with the device it creates three event files.
 
-from pybricks import ev3brick as brick
-from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor)
-from pybricks.parameters import (Port, Stop, Direction, Button, Color,
-                                 SoundFile, ImageFile, Align)
-from pybricks.tools import print, wait, StopWatch
-from pybricks.robotics import DriveBase
+/dev/input/event2 (touchpad events)
+/dev/input/event3 (controller movement, like tilting, shaking, etc...)
+/dev/input/event4 (buttons, sticks, etc...)
+Each event provides five values, but we only need the event ID, code, and value. Here is a list of all events I could map:
+"""
+## Import libraries ##
+import evdev
+import ev3dev.auto as ev3
+import threading
+import time
+from ev3dev2.sound import Sound #needed to play sound
 
-import struct
+#some music 
+spkr = Sound()
+#spkr.play_file('bark.wav')
+spkr.speak('yooo')
 
-# Declare motors 
-left_motor = Motor(Port.B)
-right_motor = Motor(Port.C)
 
-# Initialize variables. 
-# Assuming sticks are in the middle when starting.
-right_stick_x = 124
-right_stick_y = 124
+## Converting Ps4 events into understandable code 
+def clamp(n, minn, maxn):
+    return max(min(maxn, n), minn)
 
-# A helper function for converting stick values (0 - 255)
-# to more usable numbers (-100 - 100)
 def scale(val, src, dst):
-    """
-    Scale the given value from the scale of src to the scale of dst.
- 
-    val: float or int
-    src: tuple
-    dst: tuple
- 
-    example: print(scale(99, (0.0, 99.0), (-1.0, +1.0)))
-    """
     return (float(val - src[0]) / (src[1] - src[0])) * (dst[1] - dst[0]) + dst[0]
 
+def scale_stick(value):
+    return scale(value,(0,255),(-500,500))
 
-# Find the PS4 Gamepad:
-# /dev/input/event4 is the usual file handler for the gamepad.
-# look at contents of /proc  /bus/input/devices if it doesn't work.
-infile_path = "/dev/input/event4"
+def dc_clamp(value):
+    return clamp(value,-500,500)
 
-# open file in binary mode
-in_file = open(infile_path, "rb")
+## Initializing ##
+print("Finding ps4 controller...")
+devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
+ps4dev = devices[0].fn
 
-# Read from the file
-# long int, long int, unsigned short, unsigned short, unsigned int
-FORMAT = 'llHHI'    
-EVENT_SIZE = struct.calcsize(FORMAT)
-event = in_file.read(EVENT_SIZE)
+gamepad = evdev.InputDevice(ps4dev)
 
-while event:
-    (tv_sec, tv_usec, ev_type, code, value) = struct.unpack(FORMAT, event)
-    if ev_type == 3 and code == 3:
-        right_stick_x = value
-    if ev_type == 3 and code == 4:
-        right_stick_y = value
+forward_speed = 0
+side_speed = 0
+grab_speed = 0
+running = True
 
-    # Scale stick positions to -100,100
-    forward = scale(right_stick_y, (0,255), (100,-100))
-    left = scale(right_stick_x, (0,255), (100,-100))
+## The Motors ##
+class MotorThread(threading.Thread):
+    def __init__(self):
+        self.right_motor = ev3.LargeMotor(ev3.OUTPUT_C)
+        self.left_motor = ev3.LargeMotor(ev3.OUTPUT_B)
+        self.claw_motor = ev3.MediumMotor(ev3.OUTPUT_D)
+        threading.Thread.__init__(self)
 
-    # Set motor voltages. If we're steering left, the left motor
-    # must run backwards so it has a -left component
-    # It has a forward component for going forward too. 
-    left_motor.dc(forward - left)
-    right_motor.dc(forward + left)
+    def run(self):
+        print("Engine running! Jack")
+        while running:
+            self.right_motor.run_forever(speed_sp=dc_clamp(forward_speed+side_speed))
+            self.left_motor.run_forever(speed_sp=dc_clamp(-forward_speed+side_speed))
+            self.claw_motor.run_forever(speed_sp=dc_clamp(grab_speed))
+        self.right_motor.stop()
+        self.left_motor.stop()
+        self.claw_motor.stop()
 
-    # Finally, read another event
-    event = in_file.read(EVENT_SIZE)
+motor_thread = MotorThread()
+motor_thread.setDaemon(True)
+motor_thread.start()
 
-in_file.close()
+## The PS4 Controller Mapping ##
+
+for event in gamepad.read_loop():   #this loops infinitely
+    # map the controller left analog stick to the two driving motors
+    if event.type == 3:             #left stick is moved
+        if event.code == 0:         #X axis on left stick
+            forward_speed = -scale_stick(event.value)
+        if event.code == 1:         #Y axis on left stick
+            side_speed = scale_stick(event.value)
+        if side_speed < 100 and side_speed > -100:
+            side_speed = 0
+        if forward_speed < 100 and forward_speed > -100:
+            forward_speed = 0
+
+    # map the controller right analog stick to the grab claw/LargeMotor
+    if event.type == 3:
+        if event.code == 2:
+            grab_speed = scale_stick(event.value)
+        if grab_speed < 100 and -grab_speed > -100:
+            grab_speed = 0
+    if event.type == 3:
+        if event.code == 4:
+            grab_speed = -scale_stick(event.value)
+        if grab_speed < 100 and grab_speed > -100:
+            grab_speed = 0
+
+    # button X exits the Program
+    if event.type == 1 and event.code == 305 and event.value == 1:
+        print("X button is pressed. Stopping.")
+        running = False
+        time.sleep(0.5) # Wait for the motor thread to finish
+        break
