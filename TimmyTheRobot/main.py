@@ -1,13 +1,26 @@
 #!/usr/bin/env python3
+"""
+When the PS4 is paried with the device it creates three event files.
 
-
+/dev/input/event2 (touchpad events)
+/dev/input/event3 (controller movement, like tilting, shaking, etc...)
+/dev/input/event4 (buttons, sticks, etc...)
+Each event provides five values, but we only need the event ID, code, and value. Here is a list of all events I could map:
+"""
 ## Import libraries ##
 import evdev
 import ev3dev.auto as ev3
 import threading
 import time
+from ev3dev2.sound import Sound #needed to play sound
 
-## Some helpers ##
+#some music 
+spkr = Sound()
+#spkr.play_file('bark.wav')
+spkr.speak('yooo')
+
+
+## Converting Ps4 events into understandable code 
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)
 
@@ -80,7 +93,7 @@ for event in gamepad.read_loop():   #this loops infinitely
         if grab_speed < 100 and grab_speed > -100:
             grab_speed = 0
 
-    # button O exits the Program
+    # button X exits the Program
     if event.type == 1 and event.code == 305 and event.value == 1:
         print("X button is pressed. Stopping.")
         running = False
