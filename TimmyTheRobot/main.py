@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#this is a shebang --> tells the compiler which program to use to open the file.
 """
 When the PS4 is paried with the device it creates three event files.
 
@@ -7,25 +8,26 @@ When the PS4 is paried with the device it creates three event files.
 /dev/input/event4 (buttons, sticks, etc...)
 Each event provides five values, but we only need the event ID, code, and value. Here is a list of all events I could map:
 """
-## Import libraries ##
+
+# Import libraries
 import evdev
 import ev3dev.auto as ev3
 import threading
 import time
 from ev3dev2.sound import Sound #needed to play sound
 
-#some music 
+# some music 
 spkr = Sound()
-#spkr.play_file('bark.wav')
 spkr.speak('yooo')
 
 
-## Converting Ps4 events into understandable code 
+## Converting Ps4 events into usable code 
 def clamp(n, minn, maxn):
-    return max(min(maxn, n), minn)
+    return max(min(maxn, n), minn) #creating a clamp function which restricts a value to set values
 
 def scale(val, src, dst):
     return (float(val - src[0]) / (src[1] - src[0])) * (dst[1] - dst[0]) + dst[0]
+    # a scale funtion which converts 
 
 def scale_stick(value):
     return scale(value,(0,255),(-500,500))
@@ -54,7 +56,7 @@ class MotorThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        print("Engine running! Jack")
+        print("Engine running! vrooom!")
         while running:
             self.right_motor.run_forever(speed_sp=dc_clamp(forward_speed+side_speed))
             self.left_motor.run_forever(speed_sp=dc_clamp(-forward_speed+side_speed))
