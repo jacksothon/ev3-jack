@@ -27,7 +27,7 @@ def clamp(n, minn, maxn):
 
 def scale(val, src, dst):
     return (float(val - src[0]) / (src[1] - src[0])) * (dst[1] - dst[0]) + dst[0]
-    # a scale funtion which converts 
+    # a scale funtion which converts ps4 value to a different form
 
 def scale_stick(value):
     return scale(value,(0,255),(-500,500))
