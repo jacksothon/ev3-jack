@@ -6,7 +6,8 @@ When the PS4 is paried with the device it creates three event files.
 /dev/input/event2 (touchpad events)
 /dev/input/event3 (controller movement, like tilting, shaking, etc...)
 /dev/input/event4 (buttons, sticks, etc...)
-Each event provides five values, but we only need the event ID, code, and value. Here is a list of all events I could map:
+Each event provides five values, but we only need the event ID, 
+code, and value. Here is a list of all events I could map:
 """
 
 # Import libraries
@@ -41,6 +42,7 @@ def scale_stick(value):
 def dc_clamp(value):
     return clamp(value,-1000,1000)
 
+"""
 ## Initializing ##
 print("Finding ps4 controller...")
 devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
@@ -106,4 +108,5 @@ for event in gamepad.read_loop():   #this loops infinitely
         print("X button is pressed. Stopping.")
         running = False
         time.sleep(0.5) # Wait for the motor thread to finish
-        break
+        breakdndndnd
+"""
