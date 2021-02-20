@@ -7,7 +7,7 @@ When the PS4 is paried with the device it creates three event files.
 /dev/input/event3 (controller movement, like tilting, shaking, etc...)
 /dev/input/event4 (buttons, sticks, etc...)
 Each event provides five values, but we only need the event ID, 
-code, and value. Here is a list of all events I could map:
+code, and value.
 """
 
 # Import libraries
@@ -17,6 +17,7 @@ import threading
 import time
 from ev3dev2.sound import Sound #needed to play sound
 
+"""
 # some sound
 spkr = Sound()
 spkr.speak('yooo')
@@ -26,7 +27,7 @@ while True:
     time.sleep(0.5)
     spkr.speak('yooo')
     spkr.speak('wazzaaaa')
-
+"""
 
 ## Converting Ps4 events into usable code 
 def clamp(n, minn, maxn):
@@ -42,9 +43,9 @@ def scale_stick(value):
 def dc_clamp(value):
     return clamp(value,-1000,1000)
 
-"""
+
 ## Initializing ##
-print("Finding ps4 controller...")
+print("looking for ps4 controller") 
 devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
 ps4dev = devices[0].fn
 
@@ -55,6 +56,36 @@ side_speed = 0
 grab_speed = 0
 running = True
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 ## The Motors ##
 class MotorThread(threading.Thread):
     def __init__(self):
@@ -77,6 +108,9 @@ motor_thread = MotorThread()
 motor_thread.setDaemon(True)
 motor_thread.start()
 
+
+
+"""
 ## The PS4 Controller Mapping ##
 
 for event in gamepad.read_loop():   #this loops infinitely
@@ -108,5 +142,5 @@ for event in gamepad.read_loop():   #this loops infinitely
         print("X button is pressed. Stopping.")
         running = False
         time.sleep(0.5) # Wait for the motor thread to finish
-        breakdndndnd
+        break
 """
