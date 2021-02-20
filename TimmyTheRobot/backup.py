@@ -58,34 +58,6 @@ running = True
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
 ## The Motors ##
 class MotorThread(threading.Thread):
     def __init__(self):
@@ -110,7 +82,6 @@ motor_thread.start()
 
 
 
-"""
 ## The PS4 Controller Mapping ##
 
 for event in gamepad.read_loop():   #this loops infinitely
