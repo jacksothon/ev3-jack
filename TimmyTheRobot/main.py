@@ -51,8 +51,8 @@ class MotorThread(threading.Thread):
     def run(self):
         print('the engine is running!')
         while running: #this will run forever 
-            self.right_motor.run_forever(speed_sp=(forward_speed_R + ))
-            self.left_motor.run_forever(speed_sp=(forward_speed_L + ))
+            self.right_motor.run_forever(speed_sp=(forward_speed_R + side_speed_R ))
+            self.left_motor.run_forever(speed_sp=(forward_speed_L + side_speed_L  ))
             self.claw_motor.run_forever(speed_sp=(grab_speed))
         self.right_motor.stop()
         self.left_motor.stop()
@@ -69,14 +69,16 @@ for event in controller.read_loop(): #this will loop infinitely through all the 
         if event.code == 1: # y axis of left joystick
             forward_speed_L = scale_stick(event.value)
             forward_speed_R = scale_stick(event.value)
-        if event.code == 2: # x axis of right joystick // if we move joystick to right: 
+        
+        if event.code == 3: # x axis of right joystick // if we move joystick to right: 
             forward_speed_L = 0
             forward_speed_R = 0
-            side_speed_R = -scale_stick(event.value) # right wheel will spin backwards
-            side_speed_L = scale_stick(event.value) # left wheel will sping forwards
+            side_speed_R = -1*(scale_stick(event.value))
+            side_speed_L = scale_stick(event.value)
             
     if event.type == 1 and event.code == 304 and event.value == 1:
-        print("X button is pressed. Stopping.")
+        print("EMERGENCY SHUTDOWN \nPlutonium-238: somehow gone \nENGINE: bro ")
+        time.sleep(2) # time to read shutdown message
         running = False
         time.sleep(0.5) # Wait for the motor thread to finish
         break
