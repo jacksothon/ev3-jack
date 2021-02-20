@@ -1,14 +1,5 @@
 #!/usr/bin/env python3
 #this is a shebang --> tells the compiler which program to use to open the file.
-"""
-When the PS4 is paried with the device it creates three event files.
-
-/dev/input/event2 (touchpad events)
-/dev/input/event3 (controller movement, like tilting, shaking, etc...)
-/dev/input/event4 (buttons, sticks, etc...)
-Each event provides five values, but we only need the event ID, 
-code, and value.
-"""
 
 # Import libraries
 import evdev
