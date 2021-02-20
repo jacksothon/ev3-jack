@@ -18,10 +18,10 @@ def scale(val, src, dst):
 def scale_stick(value):
     return scale(value,(0,255),(-1000,1000)) 
     # you can see here that it scales the values to -1000 and 1000 which ev3motors understand
-
-def dc_clamp(value):
+""""
+def (value):
     return clamp(value,-1000,1000) #using clamp to restrict to -1000 and 1000 which is max speed on lego motors
-
+"""
 
 #Initialising (the ps4 connection code was obtained from evdev documentation)
 #This allows me to take input from multiple event files, as seen below
@@ -31,9 +31,13 @@ ps4dev = devices[0].fn
 
 controller = evdev.InputDevice(ps4dev)
 
-forward_speed = 0
+forward_speed_L = 0
+forward_speed_R = 0
+side_speed_L = 0 # variable used to alter forward speed to allow a change in direction.
+side_speed_R = 0 
 grab_speed = 0
 running = True
+
 
 
 # all the motors #
@@ -47,9 +51,9 @@ class MotorThread(threading.Thread):
     def run(self):
         print('the engine is running!')
         while running: #this will run forever 
-            self.right_motor.run_forever(speed_sp=dc_clamp(forward_speed))
-            self.left_motor.run_forever(speed_sp=dc_clamp(forward_speed))
-            self.claw_motor.run_forever(speed_sp=dc_clamp(grab_speed))
+            self.right_motor.run_forever(speed_sp=(forward_speed_R + ))
+            self.left_motor.run_forever(speed_sp=(forward_speed_L + ))
+            self.claw_motor.run_forever(speed_sp=(grab_speed))
         self.right_motor.stop()
         self.left_motor.stop()
         self.claw_motor.stop()
@@ -61,13 +65,15 @@ motor_thread.start() #execute the class
 
 # mapping controller events to change the speed variables.
 for event in controller.read_loop(): #this will loop infinitely through all the events
-    if event.type == 3: 
+    if event.type == 3: #moving back and forwards with Y axis of left stick
         if event.code == 1: # y axis of left joystick
-            forward_speed = scale_stick(event.value)
-        if event.code == 2:
-
-        
-
+            forward_speed_L = scale_stick(event.value)
+            forward_speed_R = scale_stick(event.value)
+        if event.code == 2: # x axis of right joystick // if we move joystick to right: 
+            forward_speed_L = 0
+            forward_speed_R = 0
+            side_speed_R = -scale_stick(event.value) # right wheel will spin backwards
+            side_speed_L = scale_stick(event.value) # left wheel will sping forwards
             
     if event.type == 1 and event.code == 304 and event.value == 1:
         print("X button is pressed. Stopping.")
