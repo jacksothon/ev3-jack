@@ -114,4 +114,3 @@ for event in gamepad.read_loop():   #this loops infinitely
         running = False
         time.sleep(0.5) # Wait for the motor thread to finish
         break
-"""

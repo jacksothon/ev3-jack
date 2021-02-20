@@ -44,19 +44,30 @@ class motorthread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        while running: #this will run forever and cause motors to spin at different speed depending on the situation
+        while running: #this will run forever 
             self.rightmotor.run_forever(speed_sp=dc_clamp(forward_speed+side_speed))
             self.leftmotor.run_forever(speed_sp=dc_clamp(-forward_speed+side_speed))
             self.clawmotor.run_forever(speed_sp=dc_clamp(grab_speed))
+        self.rightmotor.stop()
+        self.leftmotor.stop()
+        self.clawmotor.stop()
 
 motor_thread = motorthread() #assigning the object/class???
-motor_thread.setDaemon(True)
-motor_thread.start() #execute the class the class
+motor_thread.setDaemon(True) #something to allow it to run all at the same time
+motor_thread.start() #execute the class 
 
 # mapping controller events to change the speed variables.
 
 for event in controller.read_loop(): #this will loop infinitely through all the events
-    # mapping controller right ana
+    if event.type == 1: # mapping the R2 button to move robot forward
+        if event.code == 311:
+            forward_speed = scale_stick(event.value) #if R2 pressed forward speed is increased depending on how much you press R2
+            
+    if event.type == 1 and event.code == 305 and event.value == 1:
+        print("X button is pressed. Stopping.")
+        running = False
+        time.sleep(0.5) # Wait for the motor thread to finish
+        break
 
 
 
