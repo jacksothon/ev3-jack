@@ -22,8 +22,9 @@ def scale_stick_lift(value): #same as scale_stick but the R2 and R1 only go from
     return scale(value,(0,255),(0,1000)) 
 
     # you can see here that it scales the values to -1000 and 1000 which ev3motors understand
+    
 """"
-def (value):
+def (value): 
     return clamp(value,-1000,1000) #using clamp to restrict to -1000 and 1000 which is max speed on lego motors
 """
 
@@ -45,6 +46,8 @@ running = True
 
 
 # all the motors #
+# The template of this thread is taken from another piece of code
+# but the side_speed_R and side_speed_L was put in by me
 class MotorThread(threading.Thread):
     def __init__(self):
         self.right_motor = ev3.LargeMotor(ev3.OUTPUT_C)
@@ -68,6 +71,7 @@ motor_thread.start() #execute
 
 
 # mapping controller events to change the speed variables.
+# I coded everything below. 
 for event in controller.read_loop(): #this will loop infinitely through all the events
     if event.type == 3: #moving back and forwards with Y axis of left stick
         if event.code == 1: # y axis of left joystick
